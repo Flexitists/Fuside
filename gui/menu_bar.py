@@ -1,21 +1,15 @@
-import customtkinter as ctk
-from CTkMenuBar import CTkMenuBar
-from CTkMenuBar.dropdown_menu import CustomDropdownMenu
-
+from CTkMenuBar import *
 from core import menu_command
 
-
-class Menu(CTkMenuBar):
+class Menu(CTkTitleMenu):
     def __init__(self, master):
         super().__init__(master)
 
-        # ==================
         # File
-        # ==================
         file_btn = self.add_cascade("File")
 
         self.file_menu = CustomDropdownMenu(widget=file_btn)
-        file_btn.bind("<Button-1>", lambda e: self.file_menu.toggleShow())
+        #// file_btn.bind("<Button-1>", lambda e: self.file_menu.toggleShow())
 
         self.file_menu.add_option(
             option="New File",
@@ -46,13 +40,11 @@ class Menu(CTkMenuBar):
             command=master.destroy
         )
 
-        # ==================
         # Edit
-        # ==================
         edit_btn = self.add_cascade("Edit")
 
         self.edit_menu = CustomDropdownMenu(widget=edit_btn)
-        edit_btn.bind("<Button-1>", lambda e: self.edit_menu.toggleShow())
+        #// edit_btn.bind("<Button-1>", lambda e: self.edit_menu.toggleShow())
 
         self.edit_menu.add_option(
             option="Undo",
@@ -100,12 +92,10 @@ class Menu(CTkMenuBar):
             command=menu_command.replace
         )
 
-        # ==================
         # View
-        # ==================
         view_btn = self.add_cascade("View")
 
-        view_btn.bind("<Button-1>", lambda e: self.view_menu.toggleShow())
+        #// view_btn.bind("<Button-1>", lambda e: self.view_menu.toggleShow())
         self.view_menu = CustomDropdownMenu(widget=view_btn)
 
         self.view_menu.add_option(

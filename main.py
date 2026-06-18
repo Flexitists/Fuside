@@ -16,13 +16,12 @@ with open(os.path.join(os.path.dirname(__file__), "assents", "theme.json")) as t
 
 
 root = ctk.CTk()
-root.title("Fuside")
+root.title(" ")
 root.iconbitmap(os.path.join(os.path.dirname(__file__), "assents", "icon.ico"))
 root.geometry("1000x625")
 
 # Menu - pass theme data to ensure synchronization
 menus = Menu(root)
-menus.pack(side="top", fill="x")
 
 # Sidebar
 sidebar = Sidebar(root)
