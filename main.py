@@ -16,7 +16,7 @@ with open(os.path.join(os.path.dirname(__file__), "assents", "theme.json")) as t
 
 
 root = ctk.CTk()
-root.title(" ")
+root.title("Fuside")
 root.iconbitmap(os.path.join(os.path.dirname(__file__), "assents", "icon.ico"))
 root.geometry("1000x625")
 
