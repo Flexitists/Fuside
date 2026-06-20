@@ -105,10 +105,12 @@ def save_as_file():
 
 def open_theme_setting():
     """Open theme setting window"""
-    import subprocess
-    import sys
-    theme_file = os.path.join(os.path.dirname(__file__), "theme_setting.py")
-    subprocess.Popen([sys.executable, theme_file])
+    from core.setting import open_settings
+
+    if editor_instance and editor_instance.winfo_toplevel():
+        open_settings(editor_instance.winfo_toplevel())
+    else:
+        open_settings()
 
 # Edit menu functions
 def undo():
