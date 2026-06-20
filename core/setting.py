@@ -6,7 +6,7 @@ from tkinter import messagebox
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 THEME_PATH = os.path.join(BASE_DIR, "assents", "theme.json")
-ICON_PATH = os.path.join(BASE_DIR, "assents", "icon.ico")
+ICON_PATH = os.path.join(BASE_DIR,  "assents", "icon.ico")
 
 DEFAULT_THEME = {
     "theme_appearance": "Dark",
@@ -40,14 +40,14 @@ class SettingWindow(ctk.CTkToplevel):
         super().__init__(master)
 
         self.title("Fuside Settings")
-        self.geometry("760x480")
-        self.minsize(620, 400)
-        self.resizable(True, True)
+        self.geometry("795x565")
+        #// self.minsize(620, 400)
+        self.resizable(False, False)
 
-        try:
-            self.iconbitmap(ICON_PATH)
-        except Exception:
-            pass
+        #//try:
+        self.iconbitmap(ICON_PATH)
+        #//except Exception:
+        #//    pass
 
         self.theme_data = load_theme_config()
 
@@ -226,12 +226,9 @@ class SettingWindow(ctk.CTkToplevel):
         self.theme_data["theme_color"] = self.color_var.get()
         save_theme_config(self.theme_data)
 
-        ctk.set_appearance_mode(self.theme_data["theme_appearance"])
-        ctk.set_default_color_theme(self.theme_data["theme_color"])
-
         messagebox.showinfo(
             "Settings Saved",
-            "Theme saved to assents/theme.json and applied to the current session.",
+            "Restart Fuside to apply!",
         )
 
 
