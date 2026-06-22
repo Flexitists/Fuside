@@ -43,7 +43,7 @@ class Editor(ctk.CTkFrame):
             font=("Consolas", 13)        # Dùng font chữ đồng bộ với cột số dòng
         )
         self.editor.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
-        self.editor.configure(spacing1=2)
+        self.editor.configure(spacing1=2, tabs=("32",))
 
         # 3. Lắng nghe các sự kiện gõ phím, cuộn chuột để cập nhật và đồng bộ số dòng
         self.editor.bind("<KeyRelease>", self.update_line_numbers)
@@ -54,6 +54,10 @@ class Editor(ctk.CTkFrame):
         # Phím tắt thủ công cho Undo/Redo
         self.editor.bind("<Control-z>", self._undo)
         self.editor.bind("<Control-y>", self._redo)
+
+        self.editor.bind("<Control-x>", lambda e: self.editor.event_generate("<<Cut>>"))
+        self.editor.bind("<Control-c>", lambda e: self.editor.event_generate("<<Copy>>"))
+        self.editor.bind("<Control-v>", lambda e: self.editor.event_generate("<<Paste>>"))
     
     def _undo(self, event=None):
         """Hành động Undo"""

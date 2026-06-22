@@ -7,5 +7,5 @@ class Terminal(ctk.CTkFrame):
         terminal_label = ctk.CTkLabel(self, text="Terminal")
         terminal_label.pack(side="top")
 
-        terminal = ctk.CTkTextbox(self)
+        terminal = ctk.CTkTextbox(self, font=("Consolas", 13))
         terminal.pack(fill="both", expand=True, pady=5)

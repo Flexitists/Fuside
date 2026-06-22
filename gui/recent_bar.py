@@ -61,7 +61,7 @@ class Sidebar(ctk.CTkFrame):
             # Open button
             btn = ctk.CTkButton(
                 file_row, 
-                text=file_name,
+                text=f"{file_name[:20] + "..." if len(file_name) > 20 else file_name}",
                 anchor="w",
                 fg_color="transparent",
                 hover_color="gray20",

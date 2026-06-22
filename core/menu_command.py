@@ -1,4 +1,4 @@
-from tkinter import filedialog, messagebox
+from tkinter import TclError, filedialog, messagebox
 from core import file_manager
 import os
 import subprocess
@@ -133,32 +133,50 @@ def cut():
     """Cut selected text"""
     if editor_instance:
         try:
-            editor_instance.editor.event_generate("<<Cut>>")
-        except:
+            selected_text = editor_instance.editor.get("sel.first", "sel.last")
+            editor_instance.editor.clipboard_clear()
+            editor_instance.editor.clipboard_append(selected_text)
+            editor_instance.editor.delete("sel.first", "sel.last")
+            editor_instance.editor.focus_set()
+            editor_instance.update_line_numbers()
+        except TclError:
             pass
 
 def copy():
     """Copy selected text"""
     if editor_instance:
         try:
-            editor_instance.editor.event_generate("<<Copy>>")
-        except:
+            selected_text = editor_instance.editor.get("sel.first", "sel.last")
+            editor_instance.editor.clipboard_clear()
+            editor_instance.editor.clipboard_append(selected_text)
+            editor_instance.editor.focus_set()
+        except TclError:
             pass
 
 def paste():
     """Paste text"""
     if editor_instance:
         try:
-            editor_instance.editor.event_generate("<<Paste>>")
-        except:
+            clipboard_text = editor_instance.editor.clipboard_get()
+            try:
+                editor_instance.editor.delete("sel.first", "sel.last")
+            except TclError:
+                pass
+            editor_instance.editor.insert("insert", clipboard_text)
+            editor_instance.editor.focus_set()
+            editor_instance.update_line_numbers()
+        except TclError:
             pass
 
 def select_all():
     """Select all text"""
     if editor_instance:
-        editor_instance.editor.tag_add("sel", "1.0", "end")
+        editor_instance.editor.focus_set()
+        editor_instance.editor.tag_remove("sel", "1.0", "end")
+        editor_instance.editor.tag_add("sel", "1.0", "end-1c")
         editor_instance.editor.mark_set("insert", "1.0")
         editor_instance.editor.see("insert")
+        return "break"
 
 def find():
     """Find text in editor"""
