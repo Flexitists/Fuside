@@ -36,6 +36,13 @@ class Menu(CTkTitleMenu):
         self.file_menu.add_separator()
 
         self.file_menu.add_option(
+            option="Settings",
+            command=menu_command.open_theme_setting
+        )
+
+        self.file_menu.add_separator()
+
+        self.file_menu.add_option(
             option="Exit",
             command=master.destroy
         )
@@ -121,8 +128,3 @@ class Menu(CTkTitleMenu):
         )
 
         self.view_menu.add_separator()
-
-        self.view_menu.add_option(
-            option="Theme Setting",
-            command=menu_command.open_theme_setting
-        )
