@@ -1,5 +1,7 @@
 import customtkinter as ctk
 
+from core import i18n
+
 class Editor(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -8,11 +10,11 @@ class Editor(ctk.CTkFrame):
         name_and_run_frame = ctk.CTkFrame(self)
         name_and_run_frame.pack(side="top", fill="x", padx=5, pady=5)
 
-        self.name_file = ctk.CTkLabel(name_and_run_frame, text="Untitled", font=("Arial", 13, "bold"))
+        self.name_file = ctk.CTkLabel(name_and_run_frame, text=i18n.t("untitled"), font=("Arial", 13, "bold"))
         self.name_file.pack(side="left", fill="x", expand=True, padx=5, pady=5)
 
-        run_button = ctk.CTkButton(name_and_run_frame, text="▶ Run", width=80, height=28)
-        run_button.pack(side="right", padx=5, pady=5)
+        self.run_button = ctk.CTkButton(name_and_run_frame, text=f"▶ {i18n.t('run')}", width=80, height=28)
+        self.run_button.pack(side="right", padx=5, pady=5)
 
         # ---------------- Khu vực 2: Khung chứa nội dung Editor & Số dòng (Bottom) ----------------
         content_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -86,6 +88,10 @@ class Editor(ctk.CTkFrame):
     def set_file_name(self, file_name):
         """Cập nhật nhãn tên file"""
         self.name_file.configure(text=file_name)
+
+    def refresh_language(self):
+        self.name_file.configure(text=i18n.t("untitled") if self.name_file.cget("text") == "Untitled" else self.name_file.cget("text"))
+        self.run_button.configure(text=f"▶ {i18n.t('run')}")
     
     def get_content(self):
         """Lấy toàn bộ text hiện tại từ editor"""

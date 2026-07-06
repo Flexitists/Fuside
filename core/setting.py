@@ -1,237 +1,202 @@
 import json
 import os
-import customtkinter as ctk
+import tkinter as tk
+from pathlib import Path
+from typing import Any
+
+try:
+    import customtkinter as ctk
+except ImportError:  # pragma: no cover - optional dependency in headless environments
+    ctk = None
+
 from tkinter import messagebox
 
-
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-THEME_PATH = os.path.join(BASE_DIR, "assents", "theme.json")
-ICON_PATH = os.path.join(BASE_DIR,  "assents", "icon.ico")
-
-DEFAULT_THEME = {
-    "theme_appearance": "Dark",
+_SETTINGS_PATH = os.path.join(os.path.dirname(__file__), "..", "assents", "settings.json")
+_DEFAULT_SETTINGS = {
+    "theme_appearance": "System",
     "theme_color": "blue",
+    "recent_files": [],
+    "language": "en",
 }
+_LANGUAGE_CALLBACK = None
 
 
-def load_theme_config():
-    """Load theme configuration from disk, falling back to defaults."""
-    data = DEFAULT_THEME.copy()
+def set_settings_path(path: str) -> None:
+    global _SETTINGS_PATH
+    _SETTINGS_PATH = path
+
+
+def _get_settings_path() -> str:
+    return _SETTINGS_PATH
+
+
+def _migrate_legacy_data(settings: dict[str, Any]) -> dict[str, Any]:
+    root_dir = Path(__file__).resolve().parent.parent
+    recent_json = root_dir / "assents" / "recent_files.json"
+    theme_json = root_dir / "assents" / "theme.json"
+
+    if recent_json.exists() and not settings.get("recent_files"):
+        try:
+            with recent_json.open("r", encoding="utf-8") as handle:
+                legacy_data = json.load(handle)
+            recent_files = legacy_data.get("recent_files", [])
+            if isinstance(recent_files, list):
+                settings["recent_files"] = recent_files
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    if theme_json.exists():
+        try:
+            with theme_json.open("r", encoding="utf-8") as handle:
+                theme_data = json.load(handle)
+            if isinstance(theme_data, dict):
+                settings.setdefault("theme_appearance", theme_data.get("theme_appearance", "System"))
+                settings.setdefault("theme_color", theme_data.get("theme_color", "blue"))
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return settings
+
+
+def _write_settings(data: dict[str, Any]) -> None:
+    path = Path(_get_settings_path())
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=4, ensure_ascii=False)
+
+
+def _read_settings() -> dict[str, Any]:
+    path = Path(_get_settings_path())
+    if not path.exists():
+        return {}
+
     try:
-        with open(THEME_PATH, "r", encoding="utf-8") as theme_file:
-            loaded = json.load(theme_file)
-            if isinstance(loaded, dict):
-                data.update(loaded)
-    except (FileNotFoundError, json.JSONDecodeError):
-        pass
-    return data
+        with path.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError):
+        return {}
 
 
-def save_theme_config(data):
-    """Persist theme configuration to disk."""
-    with open(THEME_PATH, "w", encoding="utf-8") as theme_file:
-        json.dump(data, theme_file, indent=2)
+def set_language_callback(callback) -> None:
+    global _LANGUAGE_CALLBACK
+    _LANGUAGE_CALLBACK = callback
 
 
-class SettingWindow(ctk.CTkToplevel):
-    """Settings window for Fuside."""
-
-    def __init__(self, master=None):
-        super().__init__(master)
-
-        self.title("Fuside Settings")
-        self.geometry("795x565")
-        #// self.minsize(620, 400)
-        self.resizable(False, False)
-
-        #//try:
-        self.iconbitmap(ICON_PATH)
-        #//except Exception:
-        #//    pass
-
-        self.theme_data = load_theme_config()
-
-        self._build_ui()
-        self._load_values()
-
-        self.transient(master)
-        self.grab_set()
-
-    def _build_ui(self):
-        outer = ctk.CTkFrame(self, corner_radius=16)
-        outer.pack(fill="both", expand=True, padx=18, pady=18)
-
-        header = ctk.CTkFrame(outer, fg_color="transparent")
-        header.pack(fill="x", padx=6, pady=(6, 12))
-
-        ctk.CTkLabel(
-            header,
-            text="Settings",
-            font=ctk.CTkFont(size=24, weight="bold"),
-        ).pack(anchor="w")
-        ctk.CTkLabel(
-            header,
-            text="Personalize Fuside's look and save it to theme.json.",
-            text_color=("gray35", "gray75"),
-        ).pack(anchor="w", pady=(4, 0))
-
-        body = ctk.CTkFrame(outer, fg_color="transparent")
-        body.pack(fill="both", expand=True, padx=6)
-
-        left = ctk.CTkFrame(body, width=200, corner_radius=14)
-        left.pack(side="left", fill="y", padx=(0, 12))
-        left.pack_propagate(False)
-
-        ctk.CTkLabel(
-            left,
-            text="Categories",
-            font=ctk.CTkFont(size=14, weight="bold"),
-        ).pack(anchor="w", padx=14, pady=(14, 8))
-
-        self.category_list = ctk.CTkSegmentedButton(
-            left,
-            values=["Appearance", "About"],
-            command=self._show_page,
-        )
-        self.category_list.set("Appearance")
-        self.category_list.pack(fill="x", padx=14, pady=(0, 14))
-
-        self.right = ctk.CTkFrame(body, corner_radius=14)
-        self.right.pack(side="left", fill="both", expand=True)
-
-        self.appearance_page = ctk.CTkFrame(self.right, fg_color="transparent")
-        self.about_page = ctk.CTkFrame(self.right, fg_color="transparent")
-
-        self._build_appearance_page()
-        self._build_about_page()
-        self._show_page("Appearance")
-
-        button_bar = ctk.CTkFrame(outer, fg_color="transparent")
-        button_bar.pack(fill="x", padx=6, pady=(10, 4))
-
-        ctk.CTkButton(
-            button_bar,
-            text="Reset to Defaults",
-            fg_color="gray30",
-            hover_color="gray40",
-            command=self.reset_defaults,
-            width=140,
-        ).pack(side="left")
-
-        ctk.CTkButton(
-            button_bar,
-            text="Save Changes",
-            command=self.save_changes,
-            width=140,
-        ).pack(side="right")
-
-    def _build_appearance_page(self):
-        page = self.appearance_page
-        page.pack(fill="both", expand=True, padx=18, pady=18)
-
-        ctk.CTkLabel(
-            page,
-            text="Appearance",
-            font=ctk.CTkFont(size=18, weight="bold"),
-        ).pack(anchor="w")
-
-        ctk.CTkLabel(
-            page,
-            text="Choose the application appearance and color theme.",
-            text_color=("gray35", "gray75"),
-        ).pack(anchor="w", pady=(4, 18))
-
-        form = ctk.CTkFrame(page, fg_color="transparent")
-        form.pack(fill="x")
-
-        ctk.CTkLabel(form, text="Theme mode").grid(row=0, column=0, sticky="w", pady=(0, 10))
-        self.appearance_var = ctk.StringVar()
-        self.appearance_option = ctk.CTkSegmentedButton(
-            form,
-            values=["System", "Light", "Dark"],
-            variable=self.appearance_var,
-        )
-        self.appearance_option.grid(row=0, column=1, sticky="ew", pady=(0, 10))
-
-        ctk.CTkLabel(form, text="Accent color").grid(row=1, column=0, sticky="w", pady=(0, 10))
-        self.color_var = ctk.StringVar()
-        self.color_option = ctk.CTkSegmentedButton(
-            form,
-            values=["blue", "green", "dark-blue"],
-            variable=self.color_var,
-        )
-        self.color_option.grid(row=1, column=1, sticky="ew", pady=(0, 10))
-
-        form.grid_columnconfigure(1, weight=1)
-
-        note = ctk.CTkFrame(page, fg_color=("gray92", "gray18"), corner_radius=12)
-        note.pack(fill="x", pady=(12, 0))
-        ctk.CTkLabel(
-            note,
-            text=(
-                "Tip: appearance changes apply immediately. "
-                "Color theme is saved for the next launch too."
-            ),
-            justify="left",
-            wraplength=300,
-            text_color=("gray25", "gray80"),
-        ).pack(anchor="w", padx=14, pady=12)
-
-    def _build_about_page(self):
-        page = self.about_page
-
-        ctk.CTkLabel(
-            page,
-            text="About Fuside",
-            font=ctk.CTkFont(size=18, weight="bold"),
-        ).pack(anchor="w", padx=18, pady=(18, 6))
-
-        about_box = ctk.CTkFrame(page, corner_radius=12)
-        about_box.pack(fill="both", expand=True, padx=18, pady=(0, 18))
-
-        lines = [
-            "Fuside is a lightweight Python IDE built with CustomTkinter.",
-            "Theme values are read from assents/theme.json on startup.",
-            "You can safely extend this panel with editor preferences later.",
-        ]
-        for line in lines:
-            ctk.CTkLabel(
-                about_box,
-                text=line,
-                anchor="w",
-                justify="left",
-                wraplength=320,
-            ).pack(anchor="w", padx=14, pady=(12, 0))
-
-    def _show_page(self, page_name):
-        """Switch the visible settings category."""
-        self.appearance_page.pack_forget()
-        self.about_page.pack_forget()
-
-        if page_name == "About":
-            self.about_page.pack(fill="both", expand=True, padx=18, pady=18)
-        else:
-            self.appearance_page.pack(fill="both", expand=True, padx=18, pady=18)
-
-    def _load_values(self):
-        self.appearance_var.set(self.theme_data.get("theme_appearance", "Dark"))
-        self.color_var.set(self.theme_data.get("theme_color", "blue"))
-
-    def reset_defaults(self):
-        self.appearance_var.set(DEFAULT_THEME["theme_appearance"])
-        self.color_var.set(DEFAULT_THEME["theme_color"])
-
-    def save_changes(self):
-        self.theme_data["theme_appearance"] = self.appearance_var.get()
-        self.theme_data["theme_color"] = self.color_var.get()
-        save_theme_config(self.theme_data)
-
-        messagebox.showinfo(
-            "Settings Saved",
-            "Restart Fuside to apply!",
-        )
+def _notify_language_change(language: str) -> None:
+    if _LANGUAGE_CALLBACK is not None:
+        _LANGUAGE_CALLBACK(language)
 
 
-def open_settings(master=None):
-    """Open the settings window."""
-    return SettingWindow(master)
+def load_settings() -> dict[str, Any]:
+    settings = dict(_DEFAULT_SETTINGS)
+    settings.update(_read_settings())
+    settings = _migrate_legacy_data(settings)
+    settings.setdefault("theme_appearance", "System")
+    settings.setdefault("theme_color", "blue")
+    settings.setdefault("recent_files", [])
+    settings.setdefault("language", "en")
+    _write_settings(settings)
+    return settings
+
+
+def save_setting(values: dict[str, Any] | None = None) -> dict[str, Any]:
+    settings = load_settings()
+    if values:
+        settings.update(values)
+    settings.setdefault("theme_appearance", "System")
+    settings.setdefault("theme_color", "blue")
+    settings.setdefault("recent_files", [])
+    settings.setdefault("language", "en")
+    _write_settings(settings)
+    return settings
+
+
+def get_setting(key: str, default: Any = None) -> Any:
+    return load_settings().get(key, default)
+
+
+def get_theme_settings() -> tuple[str, str]:
+    settings = load_settings()
+    return settings.get("theme_appearance", "System"), settings.get("theme_color", "blue")
+
+
+def add_to_recent_files(file_path: str) -> None:
+    settings = load_settings()
+    recent_files = list(settings.get("recent_files", []))
+    if file_path in recent_files:
+        recent_files.remove(file_path)
+    recent_files.insert(0, file_path)
+    settings["recent_files"] = recent_files[:10]
+    save_setting(settings)
+
+
+def delete_from_recent_files(file_path: str) -> None:
+    settings = load_settings()
+    recent_files = list(settings.get("recent_files", []))
+    if file_path in recent_files:
+        recent_files.remove(file_path)
+    settings["recent_files"] = recent_files
+    save_setting(settings)
+
+
+def delete_all_recent_files() -> None:
+    settings = load_settings()
+    settings["recent_files"] = []
+    save_setting(settings)
+
+
+def load_recent_files() -> list[str]:
+    return list(load_settings().get("recent_files", []))
+
+
+def open_settings(parent=None) -> None:
+    if ctk is None:
+        messagebox.showinfo("Settings", "customtkinter is not available.")
+        return
+
+    if parent is None:
+        window = ctk.CTk()
+    else:
+        window = ctk.CTkToplevel(parent)
+
+    window.title("Settings")
+    window.resizable(False, False)
+
+    current_appearance, current_color = get_theme_settings()
+    current_language = str(get_setting("language", "en")).lower()
+    appearance_var = tk.StringVar(value=current_appearance)
+    color_var = tk.StringVar(value=current_color)
+    language_var = tk.StringVar(value="English" if current_language == "en" else "Tiếng Việt")
+
+    frame = ctk.CTkFrame(window)
+    frame.pack(fill="both", padx=20, pady=20)
+
+    ctk.CTkLabel(frame, text="Appearance").grid(row=0, column=0, padx=10, pady=8, sticky="w")
+    appearance_box = ctk.CTkSegmentedButton(frame, values=["System", "Light", "Dark"], variable=appearance_var)
+    appearance_box.grid(row=0, column=1, padx=10, pady=8)
+
+    ctk.CTkLabel(frame, text="Color").grid(row=1, column=0, padx=10, pady=8, sticky="w")
+    color_box = ctk.CTkSegmentedButton(frame, values=["blue", "green", "dark-blue"], variable=color_var)
+    color_box.grid(row=1, column=1, padx=10, pady=8)
+
+    ctk.CTkLabel(frame, text="Language").grid(row=2, column=0, padx=10, pady=8, sticky="w")
+    language_box = ctk.CTkSegmentedButton(frame, values=["English", "Tiếng Việt"], variable=language_var)
+    language_box.grid(row=2, column=1, padx=10, pady=8)
+
+    def apply_settings() -> None:
+        selected_language = "en" if language_var.get() == "English" else "vi"
+        settings = save_setting({
+            "theme_appearance": appearance_var.get(),
+            "theme_color": color_var.get(),
+            "language": selected_language,
+        })
+        ctk.set_appearance_mode(settings["theme_appearance"])
+        ctk.set_default_color_theme(settings["theme_color"])
+        _notify_language_change(selected_language)
+        messagebox.showinfo("Applied", "Restart Fuside to change the interface!")
+
+    ctk.CTkButton(frame, text="Apply", command=apply_settings).grid(row=3, column=1, padx=10, pady=12, sticky="e")
+
+    if parent is None:
+        window.mainloop()

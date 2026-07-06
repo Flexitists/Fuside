@@ -1,6 +1,7 @@
 import customtkinter as ctk
-import json
 import os
+
+from core import setting, i18n
 
 class Sidebar(ctk.CTkFrame):
     def __init__(self, master):
@@ -9,7 +10,8 @@ class Sidebar(ctk.CTkFrame):
         sidebar = ctk.CTkFrame(self, width=250)
         sidebar.pack(side="left", fill="y")
         
-        ctk.CTkLabel(sidebar, text="Recently Opened").pack(anchor="w", padx=10)
+        self.title_label = ctk.CTkLabel(sidebar, text=i18n.t("recently_opened"))
+        self.title_label.pack(anchor="w", padx=10)
         
         self.recent_frame = ctk.CTkScrollableFrame(sidebar)
         self.recent_frame.pack(fill="both", expand=True, padx=10,)
@@ -24,9 +26,9 @@ class Sidebar(ctk.CTkFrame):
         
         #ctk.CTkLabel(footer_frame, text="This is an internal test version.", text_color="red").pack(side="left")
         
-        delete_all_btn = ctk.CTkButton(
+        self.delete_all_btn = ctk.CTkButton(
             footer_frame,
-            text="✕ Delete all",
+            text=f"✕ {i18n.t('delete_all')}",
             width=70,
             height=20,
             font=("Arial", 9),
@@ -34,20 +36,18 @@ class Sidebar(ctk.CTkFrame):
             hover_color="darkred",
             command=self.delete_all_files
         )
-        delete_all_btn.pack(side="right", padx=(5, 0))
+        self.delete_all_btn.pack(side="right", padx=(5, 0))
         
         self.editor = None
         self.on_file_open = None
+
+    def refresh_language(self):
+        self.title_label.configure(text=i18n.t("recently_opened"))
+        self.delete_all_btn.configure(text=f"✕ {i18n.t('delete_all')}")
     
     def load_recent_files(self):
-        """Load recent files from assents/recent_files.json"""
-        json_path = os.path.join(os.path.dirname(__file__), "..", "assents", "recent_files.json")
-        try:
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                return data.get("recent_files", [])
-        except (FileNotFoundError, json.JSONDecodeError):
-            return []
+        """Load recent files from the shared settings store"""
+        return setting.load_recent_files()
     
     def display_recent_files(self, parent_frame):
         """Display recent files as buttons in the frame"""

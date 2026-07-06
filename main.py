@@ -1,18 +1,16 @@
 import customtkinter as ctk
 import os
-import json
 
 from gui.terminal import Terminal
 from gui.editor import Editor
 from gui.menu_bar import Menu
 from gui.recent_bar import Sidebar
-from core import menu_command, file_manager
+from core import menu_command, file_manager, setting, i18n
 
-# Load theme configuration
-with open(os.path.join(os.path.dirname(__file__), "assents", "theme.json")) as theme_config:
-    theme_data = json.load(theme_config)
-    ctk.set_appearance_mode(theme_data["theme_appearance"])
-    ctk.set_default_color_theme(theme_data["theme_color"])
+# Load theme configuration from shared settings
+appearance, color = setting.get_theme_settings()
+ctk.set_appearance_mode(appearance)
+ctk.set_default_color_theme(color)
 
 
 root = ctk.CTk()
@@ -22,6 +20,14 @@ root.geometry("1000x625")
 
 # Menu - pass theme data to ensure synchronization
 menus = Menu(root)
+
+
+def apply_language(language: str):
+    i18n.set_language(language)
+    menus.refresh_language()
+    sidebar.refresh_language()
+    editor.refresh_language()
+    root.update_idletasks()
 
 # Sidebar
 sidebar = Sidebar(root)
@@ -42,6 +48,8 @@ terminal.pack(fill="x")
 # Set instances in menu_command for callback
 menu_command.set_editor_instance(editor)
 menu_command.set_sidebar_instance(sidebar)
+setting.set_language_callback(apply_language)
+apply_language(i18n.get_language())
 
 # Define function for opening files from sidebar
 def open_file_from_sidebar(file_path, editor_widget, sidebar_widget):
