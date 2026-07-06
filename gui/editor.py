@@ -9,7 +9,7 @@ class Editor(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        # ---------------- Area 1: File name bar and Run button (Top) ----------------
+        # ---------------- Khu vực 1: Thanh chứa tên file và nút Run (Top) ----------------
         name_and_run_frame = ctk.CTkFrame(self)
         name_and_run_frame.pack(side="top", fill="x", padx=5, pady=5)
 
@@ -19,15 +19,15 @@ class Editor(ctk.CTkFrame):
         self.run_button = ctk.CTkButton(name_and_run_frame, text=f"▶ {i18n.t('run')}", width=80, height=28)
         self.run_button.pack(side="right", padx=5, pady=5)
 
-        # ---------------- Area 2: Editor content frame & Line numbers (Bottom) ----------------
+        # ---------------- Khu vực 2: Khung chứa nội dung Editor & Số dòng (Bottom) ----------------
         content_frame = ctk.CTkFrame(self, fg_color="transparent")
         content_frame.pack(side="bottom", fill="both", expand=True)
 
-        # Configure grid for content_frame: column 1 (editor) expands
+        # Cấu hình grid hệ thống cho content_frame: cột 1 (editor) sẽ tự giãn rộng ra
         content_frame.grid_columnconfigure(1, weight=1)
         content_frame.grid_rowconfigure(0, weight=1)
 
-        # 1. Initialize line numbers textbox - use a fixed-width font
+        # 1. Khởi tạo ô hiển thị số dòng (Line Numbers) - Đặt font Monospace cố định
         self.line_numbers = ctk.CTkTextbox(
             content_frame, 
             width=45, 
@@ -39,13 +39,13 @@ class Editor(ctk.CTkFrame):
         self.line_numbers.grid(row=0, column=0, sticky="nsew", padx=(5, 0), pady=5)
         self.line_numbers.configure(spacing1=2) 
         self.line_numbers.insert("1.0", "1")
-        self.line_numbers.configure(state="disabled") # Disabled to prevent users from editing the line numbers
+        self.line_numbers.configure(state="disabled") # Khóa không cho người dùng sửa số dòng
 
-        # 2. Initialize main code input box (Editor)
+        # 2. Khởi tạo ô nhập code chính (Editor)
         self.editor = ctk.CTkTextbox(
             content_frame, 
             undo=True,                   # Kích hoạt tính năng undo/redo tích hợp sẵn của Tkinter
-            font=("Consolas", 13)        # Use same font as the line numbers column
+            font=("Consolas", 13)        # Dùng font chữ đồng bộ với cột số dòng
         )
         self.editor.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
         self.editor.configure(spacing1=2, tabs=("32",))
@@ -53,7 +53,7 @@ class Editor(ctk.CTkFrame):
         # Setup syntax highlighting for Python
         self.syntax_lexer = PythonLexer()
         self.syntax_tag_specs = [
-            (Token.Comment, "py_comment", "#6A9955"),
+            (Token.Comment,"#6A9955", "#6A9955"),
             (Token.Keyword, "py_keyword", "#569CD6"),
             (Token.Name.Builtin, "py_builtin", "#4EC9B0"),
             (Token.Name.Function, "py_function", "#DCDCAA"),
@@ -63,17 +63,17 @@ class Editor(ctk.CTkFrame):
             (Token.Operator, "py_operator", "#D4D4D4"),
             (Token.Punctuation, "py_punctuation", "#D4D4D4"),
             (Token.Name.Namespace, "py_namespace", "#4EC9B0"),
-            (Token.Name.Decorator, "py_decorator", "#C586C0"),
+            (Token.Name.Decorator, "#C586C0", "#C586C0"),
             (Token.Text, "py_text", "#D4D4D4"),
         ]
         self._setup_syntax_tags()
         self.syntax_after_id = None
 
-        # 3. Listen for keypress and scroll events to update and sync line numbers
+        # 3. Lắng nghe các sự kiện gõ phím, cuộn chuột để cập nhật và đồng bộ số dòng
         self.editor.bind("<KeyRelease>", self.on_text_change)
         self.editor.bind("<MouseWheel>", self.sync_scroll)
         self.editor.bind("<Button-1>", self.update_line_numbers) 
-        self.editor.bind("<B1-Motion>", self.sync_scroll) # Sync when selecting text and dragging the mouse
+        self.editor.bind("<B1-Motion>", self.sync_scroll) # Đồng bộ khi bôi đen text kéo chuột lên/xuống
 
         # Phím tắt thủ công cho Undo/Redo
         self.editor.bind("<Control-z>", self._undo)
@@ -84,19 +84,19 @@ class Editor(ctk.CTkFrame):
         self.editor.bind("<Control-v>", lambda e: self.editor.event_generate("<<Paste>>"))
     
     def _undo(self, event=None):
-        """Undo action"""
+        """Hành động Undo"""
         try:
             self.editor.edit_undo()
-            self.update_line_numbers() # Update line numbers after undo
+            self.update_line_numbers() # Cập nhật lại số dòng sau khi undo
         except:
             pass
         return "break"
     
     def _redo(self, event=None):
-        """Redo action"""
+        """Hành động Redo"""
         try:
             self.editor.edit_redo()
-            self.update_line_numbers() # Update line numbers after redo
+            self.update_line_numbers() # Cập nhật lại số dòng sau khi redo
         except:
             pass
         return "break"
@@ -144,14 +144,14 @@ class Editor(ctk.CTkFrame):
                     break
 
     def set_content(self, content):
-        """Clear old content and load new content into the editor"""
+        """Xóa nội dung cũ và nạp nội dung mới vào editor"""
         self.editor.delete("1.0", "end")
         self.editor.insert("1.0", content)
-        self.update_line_numbers() # Update the line counter immediately
+        self.update_line_numbers() # Cập nhật lại bộ đếm dòng ngay lập tức
         self.highlight_python_syntax()
     
     def set_file_name(self, file_name):
-        """Update the file name label"""
+        """Cập nhật nhãn tên file"""
         self.name_file.configure(text=file_name)
 
     def refresh_language(self):
@@ -159,33 +159,33 @@ class Editor(ctk.CTkFrame):
         self.run_button.configure(text=f"▶ {i18n.t('run')}")
     
     def get_content(self):
-        """Return the current text from the editor"""
+        """Lấy toàn bộ text hiện tại từ editor"""
         return self.editor.get("1.0", "end-1c")
 
     def update_line_numbers(self, event=None):
-        """Update the line count based on the editor content"""
+        """Cập nhật lại số lượng dòng dựa trên nội dung bên ô nhập code"""
         final_index = self.editor.index("end-1c")
         num_lines = int(final_index.split(".")[0])
 
         # Tạo chuỗi số dòng dạng "1\n2\n3\n..."
         lines_string = "\n".join(str(i) for i in range(1, num_lines + 1))
 
-        # Update text in the line numbers textbox
+        # Cập nhật văn bản vào ô chứa số dòng
         self.line_numbers.configure(state="normal")
         self.line_numbers.delete("1.0", "end")
         self.line_numbers.insert("1.0", lines_string)
         self.line_numbers.configure(state="disabled")
         
-        # Sync scroll position
+        # Đồng bộ vị trí cuộn
         self.sync_scroll()
 
     def sync_scroll(self, event=None):
-        """Sync vertical scroll (yview) of the line numbers box with the editor"""
+        """Đồng bộ vị trí cuộn dọc (yview) của ô số dòng khớp với ô nhập code"""
         top_visible_index = self.editor.yview()
         self.line_numbers.yview_moveto(top_visible_index[0])
 
 
-# ---- Test/demo UI code ----
+# ---- Đoạn code Test chạy thử giao diện ----
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")
     root = ctk.CTk()
