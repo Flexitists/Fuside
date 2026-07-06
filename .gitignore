@@ -1,3 +1,4 @@
 .draft
 __pycache__
 tests
+.agents
