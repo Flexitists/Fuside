@@ -11,7 +11,7 @@ except ImportError:  # pragma: no cover - optional dependency in headless enviro
 
 from tkinter import messagebox
 
-_SETTINGS_PATH = os.path.join(os.path.dirname(__file__), "..", "assents", "settings.json")
+_SETTINGS_PATH = os.path.join(os.path.dirname(__file__), "..", "assets", "settings.json")
 _DEFAULT_SETTINGS = {
     "theme_appearance": "System",
     "theme_color": "blue",
@@ -32,8 +32,8 @@ def _get_settings_path() -> str:
 
 def _migrate_legacy_data(settings: dict[str, Any]) -> dict[str, Any]:
     root_dir = Path(__file__).resolve().parent.parent
-    recent_json = root_dir / "assents" / "recent_files.json"
-    theme_json = root_dir / "assents" / "theme.json"
+    recent_json = root_dir / "assets" / "recent_files.json"
+    theme_json = root_dir / "assets" / "theme.json"
 
     if recent_json.exists() and not settings.get("recent_files"):
         try:
@@ -162,6 +162,7 @@ def open_settings(parent=None) -> None:
 
     window.title("Settings")
     window.resizable(False, False)
+    window.iconbitmap(os.path.join(os.path.dirname(__file__), "..", "assets", "icon.ico"))
 
     current_appearance, current_color = get_theme_settings()
     current_language = str(get_setting("language", "en")).lower()

@@ -15,7 +15,7 @@ ctk.set_default_color_theme(color)
 
 root = ctk.CTk()
 root.title("Fuside")
-root.iconbitmap(os.path.join(os.path.dirname(__file__), "assents", "icon.ico"))
+root.iconbitmap(os.path.join(os.path.dirname(__file__), "assets", "icon.ico"))
 root.geometry("1000x625")
 
 # Menu - pass theme data to ensure synchronization
