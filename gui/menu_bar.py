@@ -109,22 +109,3 @@ class Menu(CTkTitleMenu):
             option="Toggle Sidebar",
             command=menu_command.toggle_sidebar
         )
-
-        self.view_menu.add_separator()
-
-        self.view_menu.add_option(
-            option="Zoom In",
-            command=menu_command.zoom_in
-        )
-
-        self.view_menu.add_option(
-            option="Zoom Out",
-            command=menu_command.zoom_out
-        )
-
-        self.view_menu.add_option(
-            option="Reset Zoom",
-            command=menu_command.reset_zoom
-        )
-
-        self.view_menu.add_separator()

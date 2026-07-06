@@ -213,18 +213,3 @@ def toggle_sidebar():
         else:
             sidebar_instance.pack(side="left", fill="y")
 
-def zoom_in():
-    """Zoom in editor"""
-    if editor_instance:
-        messagebox.showinfo("Zoom", "Use Ctrl+Mouse Wheel to zoom in")
-
-def zoom_out():
-    """Zoom out editor"""
-    if editor_instance:
-        messagebox.showinfo("Zoom", "Use Ctrl+Mouse Wheel to zoom out")
-
-def reset_zoom():
-    """Reset zoom to default"""
-    if editor_instance:
-        messagebox.showinfo("Zoom", "Zoom has been reset to default")
-
