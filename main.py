@@ -1,9 +1,9 @@
 import customtkinter as ctk
 import os
+from CTkMenuBar import *
 
 from gui.terminal import Terminal
 from gui.editor import Editor
-from gui.menu_bar import Menu
 from gui.recent_bar import Sidebar
 from core import menu_command, file_manager, setting, i18n
 
@@ -19,12 +19,104 @@ root.iconbitmap(os.path.join(os.path.dirname(__file__), "assets", "icon.ico"))
 root.geometry("1000x625")
 
 # Menu - pass theme data to ensure synchronization
-menus = Menu(root)
+menus = CTkMenuBar(root)
+# File
+file_btn = menus.add_cascade(i18n.t("file"))
+file_menu = CustomDropdownMenu(widget=file_btn)
 
+file_menu.add_option(
+            option=i18n.t("new_file"),
+            command=menu_command.new_file
+        )
+file_menu.add_option(
+            option=i18n.t("open_file"),
+            command=menu_command.open_file
+        )
+
+file_menu.add_separator()
+
+file_menu.add_option(
+            option=i18n.t("save"),
+            command=menu_command.save_file
+        )
+file_menu.add_option(
+            option=i18n.t("save_as"),
+            command=menu_command.save_as_file
+        )
+
+file_menu.add_separator()
+
+file_menu.add_option(
+            option=i18n.t("settings"),
+            command=menu_command.open_theme_setting
+        )
+
+file_menu.add_separator()
+
+file_menu.add_option(
+            option=i18n.t("exit"),
+            command=root.destroy
+        )
+
+# Edit
+edit_btn = menus.add_cascade(i18n.t("edit"))
+edit_menu = CustomDropdownMenu(widget=edit_btn)
+
+edit_menu.add_option(
+            option=i18n.t("undo"),
+            command=menu_command.undo
+        )
+edit_menu.add_option(
+            option=i18n.t("redo"),
+            command=menu_command.redo
+        )
+
+edit_menu.add_separator()
+
+edit_menu.add_option(
+            option=i18n.t("cut"),
+            command=menu_command.cut
+        )
+edit_menu.add_option(
+            option=i18n.t("copy"),
+            command=menu_command.copy
+        )
+edit_menu.add_option(
+            option=i18n.t("paste"),
+            command=menu_command.paste
+        )
+
+edit_menu.add_separator()
+
+edit_menu.add_option(
+            option=i18n.t("select_all"),
+            command=menu_command.select_all
+        )
+
+edit_menu.add_separator()
+
+edit_menu.add_option(
+            option=i18n.t("find"),
+            command=menu_command.find
+        )
+
+edit_menu.add_option(
+            option=i18n.t("replace"),
+            command=menu_command.replace
+        )
+
+# View
+view_btn = menus.add_cascade(i18n.t("view"))
+view_menu = CustomDropdownMenu(widget=view_btn)
+
+view_menu.add_option(
+            option=i18n.t("toggle_sidebar"),
+            command=menu_command.toggle_sidebar
+        )
 
 def apply_language(language: str):
     i18n.set_language(language)
-    menus.refresh_language()
+    #// menus.refresh_language()
     sidebar.refresh_language()
     editor.refresh_language()
     root.update_idletasks()
