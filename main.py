@@ -93,17 +93,6 @@ edit_menu.add_option(
             command=menu_command.select_all
         )
 
-edit_menu.add_separator()
-
-edit_menu.add_option(
-            option=i18n.t("find"),
-            command=menu_command.find
-        )
-
-edit_menu.add_option(
-            option=i18n.t("replace"),
-            command=menu_command.replace
-        )
 
 # View
 view_btn = menus.add_cascade(i18n.t("view"))
@@ -136,11 +125,19 @@ editor.pack(fill="both", expand=True)
 # Terminal
 terminal = Terminal(right)
 terminal.pack(fill="x")
+editor.set_terminal(terminal)
 
 # Set instances in menu_command for callback
 menu_command.set_editor_instance(editor)
 menu_command.set_sidebar_instance(sidebar)
 setting.set_language_callback(apply_language)
+
+
+def apply_theme(appearance_mode: str):
+    sidebar.apply_theme(appearance_mode)
+
+
+setting.set_theme_callback(apply_theme)
 apply_language(i18n.get_language())
 
 # Define function for opening files from sidebar

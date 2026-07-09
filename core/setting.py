@@ -19,6 +19,7 @@ _DEFAULT_SETTINGS = {
     "language": "en",
 }
 _LANGUAGE_CALLBACK = None
+_THEME_CALLBACK = None
 
 
 def set_settings_path(path: str) -> None:
@@ -86,6 +87,16 @@ def set_language_callback(callback) -> None:
 def _notify_language_change(language: str) -> None:
     if _LANGUAGE_CALLBACK is not None:
         _LANGUAGE_CALLBACK(language)
+
+
+def set_theme_callback(callback) -> None:
+    global _THEME_CALLBACK
+    _THEME_CALLBACK = callback
+
+
+def _notify_theme_change(appearance_mode: str) -> None:
+    if _THEME_CALLBACK is not None:
+        _THEME_CALLBACK(appearance_mode)
 
 
 def load_settings() -> dict[str, Any]:
@@ -194,6 +205,7 @@ def open_settings(parent=None) -> None:
         })
         ctk.set_appearance_mode(settings["theme_appearance"])
         ctk.set_default_color_theme(settings["theme_color"])
+        _notify_theme_change(settings["theme_appearance"])
         _notify_language_change(selected_language)
         messagebox.showinfo("Applied", "Restart Fuside to change the interface!")
 

@@ -3,7 +3,7 @@ from pygments import lex
 from pygments.lexers import PythonLexer
 from pygments.token import Token
 
-from core import i18n
+from core import i18n, menu_command, run
 
 class Editor(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -16,8 +16,10 @@ class Editor(ctk.CTkFrame):
         self.name_file = ctk.CTkLabel(name_and_run_frame, text=i18n.t("untitled"), font=("Arial", 13, "bold"))
         self.name_file.pack(side="left", fill="x", expand=True, padx=5, pady=5)
 
-        self.run_button = ctk.CTkButton(name_and_run_frame, text=f"▶ {i18n.t('run')}", width=80, height=28)
+        self.run_button = ctk.CTkButton(name_and_run_frame, text=f"▶ {i18n.t('run')}", width=80, height=28, command=self.run_code)
         self.run_button.pack(side="right", padx=5, pady=5)
+        self._is_running = False
+        self._active_process = None
 
         # ---------------- Khu vực 2: Khung chứa nội dung Editor & Số dòng (Bottom) ----------------
         content_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -82,6 +84,8 @@ class Editor(ctk.CTkFrame):
         self.editor.bind("<Control-x>", lambda e: self.editor.event_generate("<<Cut>>"))
         self.editor.bind("<Control-c>", lambda e: self.editor.event_generate("<<Copy>>"))
         self.editor.bind("<Control-v>", lambda e: self.editor.event_generate("<<Paste>>"))
+
+        self.terminal_widget = None
     
     def _undo(self, event=None):
         """Hành động Undo"""
@@ -154,9 +158,52 @@ class Editor(ctk.CTkFrame):
         """Cập nhật nhãn tên file"""
         self.name_file.configure(text=file_name)
 
+    def set_terminal(self, terminal_widget):
+        self.terminal_widget = terminal_widget
+
+    def _set_running_state(self, running):
+        self._is_running = running
+        if running:
+            self.run_button.configure(text="■ Stop", fg_color="#d9534f", hover_color="#c9302c")
+        else:
+            self.run_button.configure(text=f"▶ {i18n.t('run')}", fg_color="#3b8ed0", hover_color="#36719f")
+
+    def _on_run_finished(self, return_code=None):
+        self.after(0, lambda: self._set_running_state(False))
+        self.after(0, lambda: setattr(self, "_active_process", None))
+
+    def run_code(self):
+        if self._is_running and self._active_process is not None:
+            run.stop_process(self._active_process)
+            self._active_process = None
+            self._set_running_state(False)
+            return
+
+        file_path = getattr(menu_command, "current_file_path", None)
+        content = self.get_content()
+        source_name = self.name_file.cget("text")
+
+        if not source_name or source_name == i18n.t("untitled"):
+            source_name = "untitled.py"
+
+        self._set_running_state(True)
+        if self.terminal_widget is not None:
+            self.terminal_widget.clear()
+            self.terminal_widget.show_output_tab()
+        process = run.run_file(
+            file_path=file_path,
+            terminal_widget=self.terminal_widget,
+            content=content,
+            source_name=source_name,
+            done_callback=self._on_run_finished,
+        )
+        self._active_process = process
+        if process is None:
+            self._set_running_state(False)
+
     def refresh_language(self):
         self.name_file.configure(text=i18n.t("untitled") if self.name_file.cget("text") == "Untitled" else self.name_file.cget("text"))
-        self.run_button.configure(text=f"▶ {i18n.t('run')}")
+        self._set_running_state(self._is_running)
     
     def get_content(self):
         """Lấy toàn bộ text hiện tại từ editor"""
