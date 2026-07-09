@@ -1,8 +1,9 @@
 # Fuside
 
-Fuside (Fusion Integrated Development Environment) is a modern IDE focused on simplicity, performance, and customization. It is designed for beginners and new developers who want a clean coding experience without sacrificing powerful features.
+Fuside is a lightweight IDE focused on pure coding, simplicity, and performance. It is designed for beginners and new developers who want a clean coding experience without extra features.
 
-⚠️ This project is currently under active development. Features may change without notice.
+> [!NOTE]
+> This project is unstable
 
 # ✨ Features
 - 🎨 Modern UI (Powered by CustomTkinter)
@@ -20,7 +21,8 @@ Fuside (Fusion Integrated Development Environment) is a modern IDE focused on si
 
 # 📸 Screenshots
 
-...
+<img width="1251" height="820" alt="image" src="https://github.com/user-attachments/assets/874c14f6-ca63-479a-8424-02ea3db292fd" />
+
 
 # 📦 Installation
 
