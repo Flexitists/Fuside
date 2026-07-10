@@ -11,7 +11,7 @@ def get_run_command(file_path):
     ext = os.path.splitext(file_path)[1].lower()
 
     if ext == ".py":
-        return ([sys.executable, file_path], None)
+        return (["py", file_path], None)
 
     if ext == ".c":
         exe_path = os.path.splitext(file_path)[0] + ".exe"
