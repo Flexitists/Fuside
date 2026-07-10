@@ -173,7 +173,14 @@ def open_settings(parent=None) -> None:
 
     window.title("Settings")
     window.resizable(False, False)
-    window.iconbitmap(os.path.join(os.path.dirname(__file__), "..", "assets", "icon.ico"))
+    icon_path = os.path.join(os.path.dirname(__file__), "..", "assets", "icon.ico")
+    if os.name == "nt":
+        window.iconbitmap(icon_path)
+    else:
+        if os.path.exists(icon_path):
+            icon_image = tk.PhotoImage(file=icon_path)
+            window.iconphoto(False, icon_image)
+            window._icon_image = icon_image
 
     current_appearance, current_color = get_theme_settings()
     current_language = str(get_setting("language", "en")).lower()

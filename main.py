@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import os
+import tkinter as tk
 from CTkMenuBar import *
 
 from gui.terminal import Terminal
@@ -15,7 +16,14 @@ ctk.set_default_color_theme(color)
 
 root = ctk.CTk()
 root.title("Fuside")
-root.iconbitmap(os.path.join(os.path.dirname(__file__), "assets", "icon.ico"))
+if os.name == "nt":
+    root.iconbitmap(os.path.join(os.path.dirname(__file__), "assets", "icon.ico"))
+else:
+    icon_path = os.path.join(os.path.dirname(__file__), "assets", "icon.png")
+    if os.path.exists(icon_path):
+        icon_image = tk.PhotoImage(file=icon_path)
+        root.iconphoto(False, icon_image)
+        root._icon_image = icon_image
 root.geometry("1000x625")
 
 # Menu - pass theme data to ensure synchronization
