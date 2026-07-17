@@ -45,7 +45,6 @@ Fuside/
 ├── editor/
 ├── terminal/
 ├── ui/
-├── utils/
 ├── main.py
 ├── requirements.txt
 └── README.md
