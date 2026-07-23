@@ -42,9 +42,8 @@ python main.py
 Fuside/
 ├── assets/
 ├── core/
-├── editor/
 ├── terminal/
-├── ui/
+├── gui/
 ├── main.py
 ├── requirements.txt
 └── README.md
